@@ -1,18 +1,15 @@
 package com.joacko.gestor_alquiler.model;
 
+import com.joacko.gestor_alquiler.strategy.CostoPorHora;
 import jakarta.persistence.Entity;
 import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor
-public class Camion extends Alquilable{
+public class Camion extends Alquilable {
 
     public Camion(String marca) {
-        super(marca);
-    }
-
-    @Override
-    public double calcularCosto(int horas) {
-        return horas * 150;
+        super(marca, new CostoPorHora(200));
     }
 }
+

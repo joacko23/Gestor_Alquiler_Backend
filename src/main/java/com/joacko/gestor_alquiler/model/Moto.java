@@ -1,5 +1,6 @@
 package com.joacko.gestor_alquiler.model;
 
+import com.joacko.gestor_alquiler.strategy.CostoPorHora;
 import jakarta.persistence.Entity;
 import lombok.NoArgsConstructor;
 
@@ -8,11 +9,6 @@ import lombok.NoArgsConstructor;
 public class Moto extends Alquilable {
 
     public Moto(String marca) {
-        super(marca);
-    }
-
-    @Override
-    public double calcularCosto(int horas) {
-        return horas * 60;
+        super(marca, new CostoPorHora(80));
     }
 }
