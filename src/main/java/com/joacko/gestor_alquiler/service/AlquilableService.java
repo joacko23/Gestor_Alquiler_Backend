@@ -1,6 +1,7 @@
 package com.joacko.gestor_alquiler.service;
 
 import com.joacko.gestor_alquiler.dto.AlquilableDTO;
+import com.joacko.gestor_alquiler.dto.AlquilableUpdateDTO;
 import com.joacko.gestor_alquiler.exception.RecursoNoEncontradoException;
 import com.joacko.gestor_alquiler.factory.AlquilableFactory;
 import com.joacko.gestor_alquiler.factory.TipoAlquilable;
@@ -78,6 +79,55 @@ public class AlquilableService {
         }
         return entity;
     }
+
+    /*-------------------------------------------------
+     * Buscar con filtros
+     *------------------------------------------------*/
+    public List<AlquilableDTO> buscar(TipoAlquilable tipo, String marca, Boolean disponible) {
+        return repository.findAll().stream()
+                .filter(a -> tipo == null || TipoAlquilable.valueOf(a.getClass().getSimpleName().toUpperCase()) == tipo)
+                .filter(a -> marca == null || a.getMarca().equalsIgnoreCase(marca))
+                .filter(a -> disponible == null || a.isDisponible() == disponible)
+                .map(this::reinyectarEstrategia)
+                .map(AlquilableMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    /*-------------------------------------------------
+     * Estimar costos
+     *------------------------------------------------*/
+    public double estimarCosto(Long id, int dias) {
+        if (dias <= 0) throw new IllegalArgumentException("La cantidad de días debe ser mayor a 0");
+        Alquilable entity = repository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("ID no encontrado"));
+        return reinyectarEstrategia(entity).calcularCosto(dias);
+    }
+
+    /*-------------------------------------------------
+     * Actualizar
+     *------------------------------------------------*/
+    public AlquilableDTO actualizar(Long id, AlquilableUpdateDTO dto) {
+        Alquilable entity = repository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("ID no encontrado"));
+
+        if (dto.getMarca() != null && !dto.getMarca().isBlank()) {
+            entity.setMarca(dto.getMarca());
+        }
+
+        return AlquilableMapper.toDTO(repository.save(entity));
+    }
+
+    /*-------------------------------------------------
+     * Actualizar
+     *------------------------------------------------*/
+    public void eliminar(Long id) {
+        if (!repository.existsById(id)) {
+            throw new RecursoNoEncontradoException("No se encontró el recurso a eliminar");
+        }
+        repository.deleteById(id);
+    }
+
+
 }
 
 
