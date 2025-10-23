@@ -3,8 +3,7 @@ package com.joacko.gestor_alquiler.service;
 import com.joacko.gestor_alquiler.dto.AlquilableDTO;
 import com.joacko.gestor_alquiler.dto.AlquilableUpdateDTO;
 import com.joacko.gestor_alquiler.exception.RecursoNoEncontradoException;
-import com.joacko.gestor_alquiler.factory.AlquilableFactory;
-import com.joacko.gestor_alquiler.factory.TipoAlquilable;
+import com.joacko.gestor_alquiler.factory.*;
 import com.joacko.gestor_alquiler.mapper.AlquilableMapper;
 import com.joacko.gestor_alquiler.model.Alquilable;
 import com.joacko.gestor_alquiler.repository.AlquilableRepository;
@@ -22,17 +21,25 @@ public class AlquilableService {
     @Autowired
     private AlquilableRepository repository;
 
-    @Autowired
-    private AlquilableFactory factory;
-
     /*-------------------------------------------------
-     * Crear un nuevo Alquilable
+     * Crear un nuevo Alquilable (Factory Method)
      *------------------------------------------------*/
     public AlquilableDTO crear(TipoAlquilable tipo, String marca) {
         if (marca == null || marca.isBlank()) {
             throw new IllegalArgumentException("La marca no puede estar vacía");
         }
-        Alquilable entidad = factory.crear(tipo, marca);
+
+        AlquilableCreator creator;
+
+        switch (tipo) {
+            case AUTO -> creator = new AutoCreator();
+            case MOTO -> creator = new MotoCreator();
+            case CAMION -> creator = new CamionCreator();
+            case ELECTRODOMESTICO -> creator = new ElectrodomesticoCreator();
+            default -> throw new IllegalArgumentException("Tipo de alquilable desconocido");
+        }
+
+        Alquilable entidad = creator.crear(marca);
         return AlquilableMapper.toDTO(repository.save(entidad));
     }
 
@@ -41,7 +48,7 @@ public class AlquilableService {
      *------------------------------------------------*/
     public List<AlquilableDTO> listarTodos() {
         return repository.findAll().stream()
-                .map(this::reinyectarEstrategia)      // evita estrategias nulas
+                .map(this::reinyectarEstrategia)
                 .map(AlquilableMapper::toDTO)
                 .collect(Collectors.toList());
     }
@@ -51,8 +58,7 @@ public class AlquilableService {
      *------------------------------------------------*/
     public AlquilableDTO obtenerPorId(Long id) {
         Alquilable entity = repository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException(
-                        "Alquilable con ID " + id + " no encontrado"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Alquilable con ID " + id + " no encontrado"));
         return AlquilableMapper.toDTO(reinyectarEstrategia(entity));
     }
 
@@ -61,21 +67,24 @@ public class AlquilableService {
      *------------------------------------------------*/
     public AlquilableDTO cambiarDisponibilidad(Long id, boolean disponible) {
         Alquilable entity = repository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException(
-                        "Alquilable con ID " + id + " no encontrado"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Alquilable con ID " + id + " no encontrado"));
         entity.setDisponible(disponible);
         return AlquilableMapper.toDTO(entity);
     }
 
     /*-------------------------------------------------
-     * Utilitario: vuelve a colocar la estrategia
+     * Reinyectar estrategia (Strategy)
      *------------------------------------------------*/
     private Alquilable reinyectarEstrategia(Alquilable entity) {
-        if (entity.getEstrategiaCosto() == null) {
-            TipoAlquilable tipo = TipoAlquilable.valueOf(
-                    entity.getClass().getSimpleName().toUpperCase());
-            entity.setEstrategiaCosto(
-                    factory.crear(tipo, entity.getMarca()).getEstrategiaCosto());
+        if (entity.getCalculadora() == null) {
+            TipoAlquilable tipo = TipoAlquilable.valueOf(entity.getClass().getSimpleName().toUpperCase());
+            AlquilableCreator creator = switch (tipo) {
+                case AUTO -> new AutoCreator();
+                case MOTO -> new MotoCreator();
+                case CAMION -> new CamionCreator();
+                case ELECTRODOMESTICO -> new ElectrodomesticoCreator();
+            };
+            entity.setCalculadora(creator.crear(entity.getMarca()).getCalculadora());
         }
         return entity;
     }
@@ -94,7 +103,7 @@ public class AlquilableService {
     }
 
     /*-------------------------------------------------
-     * Estimar costos
+     * Estimar costos (usa Strategy)
      *------------------------------------------------*/
     public double estimarCosto(Long id, int dias) {
         if (dias <= 0) throw new IllegalArgumentException("La cantidad de días debe ser mayor a 0");
@@ -117,17 +126,13 @@ public class AlquilableService {
         return AlquilableMapper.toDTO(repository.save(entity));
     }
 
-    /*-------------------------------------------------
-     * Actualizar
-     *------------------------------------------------*/
     public void eliminar(Long id) {
         if (!repository.existsById(id)) {
             throw new RecursoNoEncontradoException("No se encontró el recurso a eliminar");
         }
         repository.deleteById(id);
     }
-
-
 }
+
 
 
