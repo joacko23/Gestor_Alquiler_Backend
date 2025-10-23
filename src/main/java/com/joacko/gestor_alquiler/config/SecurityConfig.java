@@ -2,6 +2,8 @@ package com.joacko.gestor_alquiler.config;
 
 import com.joacko.gestor_alquiler.model.Usuario;
 import com.joacko.gestor_alquiler.repository.UsuarioRepository;
+import com.joacko.gestor_alquiler.security.CustomUserDetailsService;
+import com.joacko.gestor_alquiler.security.JwtAuthenticationFilter;
 import com.joacko.gestor_alquiler.security.JwtUtil;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -9,6 +11,7 @@ import jakarta.servlet.http.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.*;
 import org.springframework.security.authentication.*;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +31,7 @@ import java.io.IOException;
 public class SecurityConfig {
 
     private final UsuarioRepository usuarioRepository;
+    private final CustomUserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
 
     @Bean
@@ -39,6 +43,16 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .addFilterBefore(new JwtFilter(jwtUtil, usuarioRepository), UsernamePasswordAuthenticationFilter.class)
                 .build();
+    }
+
+
+    // ✅ Asociamos el UserDetailsService con el PasswordEncoder
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
     @Bean

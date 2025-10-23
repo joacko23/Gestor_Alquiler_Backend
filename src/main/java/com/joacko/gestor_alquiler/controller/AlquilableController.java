@@ -17,11 +17,14 @@ public class AlquilableController {
     @Autowired
     private AlquilableService service;
 
-    //Crear
-    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public AlquilableDTO obtenerPorId(@PathVariable Long id) {
-        return service.obtenerPorId(id);
+    // Crear nuevo
+    @PostMapping(value = "/crear", produces = MediaType.APPLICATION_JSON_VALUE)
+    public AlquilableDTO crear(
+            @RequestParam TipoAlquilable tipo,
+            @RequestParam String marca) {
+        return service.crear(tipo, marca);
     }
+
 
     //Listar todos
     @GetMapping(value = "/listar", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -29,12 +32,10 @@ public class AlquilableController {
         return service.listarTodos();
     }
 
-    //Obtener por ID
-    @PostMapping(value = "/crear", produces = MediaType.APPLICATION_JSON_VALUE)
-    public AlquilableDTO crear(
-            @RequestParam TipoAlquilable tipo,
-            @RequestParam String marca) {
-        return service.crear(tipo, marca);
+    // Obtener por ID
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public AlquilableDTO obtenerPorId(@PathVariable Long id) {
+        return service.obtenerPorId(id);
     }
 
     //Cambiar disponibilidad

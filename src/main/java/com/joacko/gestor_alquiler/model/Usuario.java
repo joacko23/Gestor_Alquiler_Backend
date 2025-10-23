@@ -1,5 +1,7 @@
 package com.joacko.gestor_alquiler.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,6 +29,7 @@ public class Usuario implements UserDetails {
     private String rol = "USER"; // Puede ser USER o ADMIN
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Reserva> reservas = new ArrayList<>();
 
     public Usuario(String nombre) {

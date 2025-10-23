@@ -1,6 +1,8 @@
 package com.joacko.gestor_alquiler.model;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +18,7 @@ public class Reserva {
     private Long id;
 
     @ManyToOne
+    @JsonBackReference
     private Usuario usuario;
 
     @ManyToOne
