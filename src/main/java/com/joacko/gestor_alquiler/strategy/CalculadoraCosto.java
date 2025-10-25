@@ -3,6 +3,10 @@ package com.joacko.gestor_alquiler.strategy;
 public class CalculadoraCosto {
     private EstrategiaCosto estrategia;
 
+    public EstrategiaCosto getEstrategia() {
+        return estrategia;
+    }
+
     public void setEstrategia(EstrategiaCosto estrategia) {
         this.estrategia = estrategia;
     }

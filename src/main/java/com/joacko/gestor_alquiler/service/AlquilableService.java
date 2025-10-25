@@ -73,21 +73,30 @@ public class AlquilableService {
     }
 
     /*-------------------------------------------------
-     * Reinyectar estrategia (Strategy)
+     * Reinyectar estrategia (Strategy + Factory Method)
      *------------------------------------------------*/
     private Alquilable reinyectarEstrategia(Alquilable entity) {
-        if (entity.getCalculadora() == null) {
-            TipoAlquilable tipo = TipoAlquilable.valueOf(entity.getClass().getSimpleName().toUpperCase());
+        if (entity.getCalculadora().getEstrategia() == null) {
+            TipoAlquilable tipo = TipoAlquilable.valueOf(
+                    entity.getClass().getSimpleName().toUpperCase()
+            );
+
             AlquilableCreator creator = switch (tipo) {
                 case AUTO -> new AutoCreator();
                 case MOTO -> new MotoCreator();
                 case CAMION -> new CamionCreator();
                 case ELECTRODOMESTICO -> new ElectrodomesticoCreator();
             };
-            entity.setCalculadora(creator.crear(entity.getMarca()).getCalculadora());
+
+            // ✅ Copia la estrategia del objeto recién creado
+            entity.getCalculadora().setEstrategia(
+                    creator.crear(entity.getMarca()).getCalculadora().getEstrategia()
+            );
         }
         return entity;
     }
+
+
 
     /*-------------------------------------------------
      * Buscar con filtros
@@ -121,6 +130,9 @@ public class AlquilableService {
 
         if (dto.getMarca() != null && !dto.getMarca().isBlank()) {
             entity.setMarca(dto.getMarca());
+        }
+        if (dto.getDisponible() != null) { 
+            entity.setDisponible(dto.getDisponible());
         }
 
         return AlquilableMapper.toDTO(repository.save(entity));

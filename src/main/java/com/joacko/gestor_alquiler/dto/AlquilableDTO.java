@@ -9,5 +9,7 @@ public class AlquilableDTO {
     private TipoAlquilable tipo;
     private String marca;
     private boolean disponible;
+    private String unidad;
+
 }
 

@@ -13,6 +13,16 @@ public class AlquilableMapper {
         dto.setMarca(entity.getMarca());
         dto.setDisponible(entity.isDisponible());
         dto.setTipo(TipoAlquilable.valueOf(entity.getClass().getSimpleName().toUpperCase()));
+
+        // ✅ Agregar unidad según estrategia
+        if (entity.getCalculadora().getEstrategia() != null) {
+            String clase = entity.getCalculadora().getEstrategia().getClass().getSimpleName().toLowerCase();
+            dto.setUnidad(clase.contains("dia") ? "día" : "hora");
+        } else {
+            dto.setUnidad("unidad no definida");
+        }
+
         return dto;
     }
+
 }
