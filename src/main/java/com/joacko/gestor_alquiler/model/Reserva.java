@@ -1,8 +1,6 @@
 package com.joacko.gestor_alquiler.model;
 
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,6 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 public class Reserva {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,9 +32,5 @@ public class Reserva {
         this.inicio = inicio;
         this.fin = fin;
     }
-
-    public double calcularCosto() {
-        int horas = (int) java.time.Duration.between(inicio, fin).toHours();
-        return alquilable.calcularCosto(horas);
-    }
 }
+

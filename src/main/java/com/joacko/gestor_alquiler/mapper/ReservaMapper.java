@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ReservaMapper {
+
     public static ReservaDTO toDTO(Reserva entity) {
         ReservaDTO dto = new ReservaDTO();
         dto.setId(entity.getId());
@@ -15,7 +16,8 @@ public class ReservaMapper {
         dto.setAlquilableMarca(entity.getAlquilable().getMarca());
         dto.setInicio(entity.getInicio());
         dto.setFin(entity.getFin());
-        dto.setCostoTotal(entity.calcularCosto());
+        // El costo viene calculado desde el Service
+        dto.setCostoTotal(0.0);
         return dto;
     }
 }
