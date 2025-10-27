@@ -55,33 +55,17 @@ public class ReservaService {
 
         // Crear reserva base
         Reserva reserva = new Reserva(usuario, alquilable, dto.getInicio(), dto.getFin());
-
-        // ✅ Calcular costo según tipo
-        long cantidadTiempo;
-        String tipo = alquilable.getClass().getSimpleName().toUpperCase();
-
-        if (tipo.equals("AUTO") || tipo.equals("MOTO") || tipo.equals("CAMION")) {
-            cantidadTiempo = java.time.temporal.ChronoUnit.HOURS.between(dto.getInicio(), dto.getFin());
-            if (cantidadTiempo <= 0) cantidadTiempo = 1;
-        } else {
-            cantidadTiempo = java.time.temporal.ChronoUnit.DAYS.between(
-                    dto.getInicio().toLocalDate(), dto.getFin().toLocalDate()
-            );
-            if (cantidadTiempo <= 0) cantidadTiempo = 1;
-        }
-
-        double costo = alquilable.getCalculadora().calcular((int) cantidadTiempo);
-
-        // Guardar y actualizar disponibilidad
         reservaRepo.save(reserva);
         alquilable.setDisponible(false);
 
-        // Devolver DTO con costo calculado dinámicamente
+        // ✅ Calcular costo con método reutilizable
+        double costo = calcularCostoReserva(reserva);
+
+        // Devolver DTO con costo calculado
         ReservaDTO dtoResponse = ReservaMapper.toDTO(reserva);
         dtoResponse.setCostoTotal(costo);
         return dtoResponse;
     }
-
 
     /*-------------------------------------------------
      * Listar reservas
@@ -89,13 +73,13 @@ public class ReservaService {
     public List<ReservaDTO> listar() {
         return reservaRepo.findAll().stream()
                 .map(reserva -> {
-                    Alquilable alquilable = reserva.getAlquilable();
-                    alquilableService.prepararParaUso(alquilable);
-                    return ReservaMapper.toDTO(reserva);
+                    double costo = calcularCostoReserva(reserva);
+                    ReservaDTO dto = ReservaMapper.toDTO(reserva);
+                    dto.setCostoTotal(costo);
+                    return dto;
                 })
                 .collect(Collectors.toList());
     }
-
 
     /*-------------------------------------------------
      * Eliminar reserva y liberar alquilable
@@ -142,34 +126,15 @@ public class ReservaService {
         if (dto.getInicio() != null) reserva.setInicio(dto.getInicio());
         if (dto.getFin() != null) reserva.setFin(dto.getFin());
 
-        // ✅ Reinyectar la estrategia antes del cálculo
-        Alquilable alquilable = alquilableService.prepararParaUso(reserva.getAlquilable());
-
-        // ✅ Calcular costo actualizado
-        long cantidadTiempo;
-        String tipo = alquilable.getClass().getSimpleName().toUpperCase();
-
-        if (tipo.equals("AUTO") || tipo.equals("MOTO") || tipo.equals("CAMION")) {
-            cantidadTiempo = java.time.temporal.ChronoUnit.HOURS.between(reserva.getInicio(), reserva.getFin());
-            if (cantidadTiempo <= 0) cantidadTiempo = 1;
-        } else {
-            cantidadTiempo = java.time.temporal.ChronoUnit.DAYS.between(
-                    reserva.getInicio().toLocalDate(), reserva.getFin().toLocalDate()
-            );
-            if (cantidadTiempo <= 0) cantidadTiempo = 1;
-        }
-
-        double costo = alquilable.getCalculadora().calcular((int) cantidadTiempo);
-
         reservaRepo.save(reserva);
 
-        // Crear DTO con el costo recalculado
+        // ✅ Recalcular costo actualizado
+        double costo = calcularCostoReserva(reserva);
+
         ReservaDTO dtoResponse = ReservaMapper.toDTO(reserva);
         dtoResponse.setCostoTotal(costo);
-
         return dtoResponse;
     }
-
 
     /*-------------------------------------------------
      * Listar reservas por usuario
@@ -180,15 +145,38 @@ public class ReservaService {
 
         return reservaRepo.findAll().stream()
                 .filter(r -> r.getUsuario().equals(usuario))
-                .peek(r -> {
-                    // ✅ Reinyectar la estrategia antes de convertir a DTO
-                    if (r.getAlquilable() != null) {
-                        alquilableService.prepararParaUso(r.getAlquilable());
-                    }
+                .map(r -> {
+                    double costo = calcularCostoReserva(r);
+                    ReservaDTO dto = ReservaMapper.toDTO(r);
+                    dto.setCostoTotal(costo);
+                    return dto;
                 })
-                .map(ReservaMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
+    /*-------------------------------------------------
+     * Método reutilizable para calcular costos
+     *------------------------------------------------*/
+    private double calcularCostoReserva(Reserva reserva) {
+        if (reserva == null || reserva.getAlquilable() == null) return 0.0;
 
+        // Reinyectar estrategia
+        Alquilable alquilable = alquilableService.prepararParaUso(reserva.getAlquilable());
+
+        long cantidadTiempo;
+        String tipo = alquilable.getClass().getSimpleName().toUpperCase();
+
+        if (tipo.equals("AUTO") || tipo.equals("MOTO") || tipo.equals("CAMION")) {
+            cantidadTiempo = java.time.temporal.ChronoUnit.HOURS.between(reserva.getInicio(), reserva.getFin());
+            if (cantidadTiempo <= 0) cantidadTiempo = 1;
+        } else {
+            cantidadTiempo = java.time.temporal.ChronoUnit.DAYS.between(
+                    reserva.getInicio().toLocalDate(),
+                    reserva.getFin().toLocalDate()
+            );
+            if (cantidadTiempo <= 0) cantidadTiempo = 1;
+        }
+
+        return alquilable.getCalculadora().calcular((int) cantidadTiempo);
+    }
 }
