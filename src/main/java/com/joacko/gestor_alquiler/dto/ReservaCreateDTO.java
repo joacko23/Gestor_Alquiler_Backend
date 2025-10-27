@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 @Data
 public class ReservaCreateDTO {
     private Long usuarioId;
+    private String usuarioEmail;
     private Long alquilableId;
     private LocalDateTime inicio;
     private LocalDateTime fin;

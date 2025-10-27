@@ -24,13 +24,27 @@ public class ReservaService {
     @Autowired private ReservaRepository reservaRepo;
     @Autowired private UsuarioRepository usuarioRepo;
     @Autowired private AlquilableRepository alquilableRepo;
+    @Autowired private AlquilableService alquilableService;
 
     /*-------------------------------------------------
      * Crear una nueva reserva
      *------------------------------------------------*/
     public ReservaDTO crear(ReservaCreateDTO dto) {
-        Usuario usuario = usuarioRepo.findById(dto.getUsuarioId())
-                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
+        Usuario usuario = null;
+
+        // 🔹 Si viene email, lo buscamos por email (nuevo flujo)
+        if (dto.getUsuarioEmail() != null) {
+            usuario = usuarioRepo.findByEmail(dto.getUsuarioEmail())
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado por email"));
+        }
+        // 🔹 Si viene ID (flujo anterior)
+        else if (dto.getUsuarioId() != null) {
+            usuario = usuarioRepo.findById(dto.getUsuarioId())
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado por ID"));
+        }
+        else {
+            throw new IllegalArgumentException("Debe enviarse el usuarioId o usuarioEmail");
+        }
 
         Alquilable alquilable = alquilableRepo.findById(dto.getAlquilableId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Alquilable no encontrado"));
@@ -39,6 +53,10 @@ public class ReservaService {
             throw new IllegalStateException("El alquilable no está disponible");
         }
 
+        // ✅ Reinyectamos la estrategia antes de usar el alquilable
+        alquilable = alquilableService.prepararParaUso(alquilable);
+
+        // Creamos la reserva
         Reserva reserva = new Reserva(usuario, alquilable, dto.getInicio(), dto.getFin());
         reservaRepo.save(reserva);
 
@@ -48,14 +66,20 @@ public class ReservaService {
         return ReservaMapper.toDTO(reserva);
     }
 
+
     /*-------------------------------------------------
      * Listar reservas
      *------------------------------------------------*/
     public List<ReservaDTO> listar() {
         return reservaRepo.findAll().stream()
-                .map(ReservaMapper::toDTO)
+                .map(reserva -> {
+                    Alquilable alquilable = reserva.getAlquilable();
+                    alquilableService.prepararParaUso(alquilable);
+                    return ReservaMapper.toDTO(reserva);
+                })
                 .collect(Collectors.toList());
     }
+
 
     /*-------------------------------------------------
      * Eliminar reserva y liberar alquilable
@@ -115,8 +139,15 @@ public class ReservaService {
 
         return reservaRepo.findAll().stream()
                 .filter(r -> r.getUsuario().equals(usuario))
+                .peek(r -> {
+                    // ✅ Reinyectar la estrategia antes de convertir a DTO
+                    if (r.getAlquilable() != null) {
+                        alquilableService.prepararParaUso(r.getAlquilable());
+                    }
+                })
                 .map(ReservaMapper::toDTO)
                 .collect(Collectors.toList());
     }
+
 
 }

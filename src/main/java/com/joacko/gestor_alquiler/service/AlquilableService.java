@@ -96,6 +96,15 @@ public class AlquilableService {
         return entity;
     }
 
+    /**
+     * Reinyecta la estrategia de cálculo en un Alquilable cargado desde la base de datos.
+     * Esto es necesario porque el campo 'calculadora' es @Transient.
+     */
+    public Alquilable prepararParaUso(Alquilable entity) {
+        return reinyectarEstrategia(entity);
+    }
+
+
 
 
     /*-------------------------------------------------
