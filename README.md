@@ -85,27 +85,28 @@ This backend powers the Angular frontend of the same system.
 
 # 🗄️ Database Diagram (Simplified)
 
-Users
- ├── id
- ├── email
- ├── password
- └── role
+Users  
+├── id  
+├── email  
+├── password  
+└── role  
 
-Alquilables
- ├── id
- ├── type (vehicle / appliance)
- ├── brand
- ├── available
- └── extra fields per subclass
+Alquilables  
+├── id  
+├── type (vehicle / appliance)  
+├── brand  
+├── available  
+└── extra fields per subclass  
 
-Rentals
- ├── id
- ├── user_id (FK)
- ├── alquilable_id (FK)
- ├── start_date
- ├── end_date
- └── total_cost 
-📡 API Endpoints (Resumen)
+Rentals  
+├── id  
+├── user_id (FK)  
+├── alquilable_id (FK)  
+├── start_date  
+├── end_date  
+└── total_cost  
+
+# 📡 API Endpoints (Resumen)
 
 🔐 Auth
 | Method | Endpoint      | Description       |
@@ -127,7 +128,7 @@ Rentals
 | GET    | `/rentals/user` | Rentals by logged user     |
 | DELETE | `/rentals/{id}` | Cancel rental              |
 
-▶️ How to Run
+# ▶️ How to Run
 
 ✅ 1. Clone the repo
 git clone https://github.com/joacko23/Gestor_Alquiler_Backend.git
@@ -149,9 +150,9 @@ mvn spring-boot:run
 Backend available at:
 ➡️ http://localhost:8080
 
-✅ Technologies
+# ✅ Technologies
 
-Java 17+
+Java 19+
 
 Spring Boot
 
@@ -163,11 +164,11 @@ Hibernate / JPA
 
 ModelMapper
 
-👨‍💻 Author
+# 👨‍💻 Author
 
-Joaquín Domenech
-Full-Stack Developer
-📧 joackodomenech@gmail.com
+**Joaquín Domenech**  
+Full-Stack Developer  
+📧 joackodomenech@gmail.com  
 
 <p align="center"> <img src="https://capsule-render.vercel.app/api?type=waving&color=0:000428,100:004e92&height=150&section=footer" /> </p> 
 
