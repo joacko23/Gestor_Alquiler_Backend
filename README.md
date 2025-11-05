@@ -81,73 +81,71 @@ This backend powers the Angular frontend of the same system.
 
 ---
 
+---
+
 # 🗄️ Database Diagram (Simplified)
 
 Users
-├── id
-├── email
-├── password
-└── role
+ ├── id
+ ├── email
+ ├── password
+ └── role
 
 Alquilables
-├── id
-├── type (vehicle / appliance)
-├── brand
-├── available
-└── extra fields per subclass
+ ├── id
+ ├── type (vehicle / appliance)
+ ├── brand
+ ├── available
+ └── extra fields per subclass
 
 Rentals
-├── id
-├── user_id (FK)
-├── alquilable_id (FK)
-├── start_date
-├── end_date
-├── total_cost
+ ├── id
+ ├── user_id (FK)
+ ├── alquilable_id (FK)
+ ├── start_date
+ ├── end_date
+ └── total_cost 
+📡 API Endpoints (Resumen)
 
----
+🔐 Auth
+| Method | Endpoint      | Description       |
+| ------ | ------------- | ----------------- |
+| POST   | `/auth/login` | Returns JWT token |
 
-# 📡 API Endpoints (Resumen)
+🚗 Alquilables
+| Method | Endpoint            | Description    |
+| ------ | ------------------- | -------------- |
+| GET    | `/alquilables`      | List all items |
+| POST   | `/alquilables`      | Create         |
+| PUT    | `/alquilables/{id}` | Update         |
+| DELETE | `/alquilables/{id}` | Delete         |
 
-### 🔐 Auth
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/auth/login` | Returns JWT token |
+📄 Rentals
+| Method | Endpoint        | Description                |
+| ------ | --------------- | -------------------------- |
+| POST   | `/rentals`      | Create rental if available |
+| GET    | `/rentals/user` | Rentals by logged user     |
+| DELETE | `/rentals/{id}` | Cancel rental              |
 
-### 🚗 Alquilables
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/alquilables` | List all items |
-| POST | `/alquilables` | Create |
-| PUT | `/alquilables/{id}` | Update |
-| DELETE | `/alquilables/{id}` | Delete |
+▶️ How to Run
 
-### 📄 Rentals
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/rentals` | Create rental if available |
-| GET | `/rentals/user` | Rentals by logged user |
-| DELETE | `/rentals/{id}` | Cancel rental |
-
----
-
-# ▶️ How to Run
-
-## ✅ 1. Clone the repo
+✅ 1. Clone the repo
 git clone https://github.com/joacko23/Gestor_Alquiler_Backend.git
 cd Gestor_Alquiler_Backend
 
-## ✅ 2. Configure database (MySQL)
+✅ 2. Configure database (MySQL)
 Create database:
+CREATE DATABASE gestor_alquiler;
 
-Set credentials in `application.properties`:
-```properties
+Configure credentials in application.properties:
 spring.datasource.url=jdbc:mysql://localhost:3306/gestor_alquiler
 spring.datasource.username=root
 spring.datasource.password=tu_password
 spring.jpa.hibernate.ddl-auto=update
 
-## ✅ 3. Run the app
+✅ 3. Run the app
 mvn spring-boot:run
+
 Backend available at:
 ➡️ http://localhost:8080
 
@@ -171,4 +169,6 @@ Joaquín Domenech
 Full-Stack Developer
 📧 joackodomenech@gmail.com
 
-<p align="center"> <img src="https://capsule-render.vercel.app/api?type=waving&color=0:000428,100:004e92&height=150&section=footer" /> </p> ```
+<p align="center"> <img src="https://capsule-render.vercel.app/api?type=waving&color=0:000428,100:004e92&height=150&section=footer" /> </p> 
+
+
